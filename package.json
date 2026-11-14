@@ -1,0 +1,35 @@
+{
+  "name": "farmared",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "24.7.0"
+  },
+  "scripts": {
+    "infra:up": "docker compose up -d --wait",
+    "infra:down": "docker compose down",
+    "db:wait": "node --env-file-if-exists=.env scripts/wait.js",
+    "db:schema": "node --env-file-if-exists=.env scripts/schema.js",
+    "data:check": "node --env-file-if-exists=.env scripts/check-data.js",
+    "data:load": "node --env-file-if-exists=.env scripts/load.js",
+    "query": "node --env-file-if-exists=.env scripts/query.js",
+    "test": "node --test test/*.test.js",
+    "test:integration": "node --env-file-if-exists=.env --test test/integration/*.test.js",
+    "lint": "eslint . --max-warnings=0",
+    "lint:fix": "eslint . --fix --max-warnings=0",
+    "format": "prettier --write \"**/*.{js,json,yaml,yml}\"",
+    "format:check": "prettier --check \"**/*.{js,json,yaml,yml}\""
+  },
+  "dependencies": {
+    "csv-parse": "7.0.3",
+    "mongodb": "6.20.0",
+    "neo4j-driver": "5.28.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "eslint": "10.15.0",
+    "globals": "16.5.0",
+    "prettier": "3.6.2"
+  }
+}
