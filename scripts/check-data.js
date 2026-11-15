@@ -1,6 +1,6 @@
 import { buildDataset } from '../src/data/prepare.js';
 
-const data = await buildDataset();
+const data = await buildDataset({ adicionales: true });
 console.log(
   JSON.stringify(
     {

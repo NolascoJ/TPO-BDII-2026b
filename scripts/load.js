@@ -6,7 +6,7 @@ const { client, db } = await connectMongo();
 
 try {
   await ensureSchema(db);
-  console.log(JSON.stringify(await loadData(client, db), null, 2));
+  console.log(JSON.stringify(await loadData(client, db, { adicionales: true }), null, 2));
 } finally {
   await client.close();
 }

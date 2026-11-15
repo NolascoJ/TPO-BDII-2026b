@@ -1,0 +1,21 @@
+id_sucursal,nombre,tipo,direccion,ciudad,provincia,telefono,activo
+AD-S001,Sucursal adicional 1,Farmacia,Calle Ejemplo 101,La Plata,Buenos Aires,,True
+AD-S002,Sucursal adicional 2,Farmacia,Calle Ejemplo 102,Rosario,Santa Fe,,True
+AD-S003,Sucursal adicional 3,Farmacia,Calle Ejemplo 103,Córdoba,Córdoba,,True
+AD-S004,Sucursal adicional 4,Farmacia,Calle Ejemplo 104,La Plata,Buenos Aires,,True
+AD-S005,Sucursal adicional 5,Farmacia,Calle Ejemplo 105,Rosario,Santa Fe,,True
+AD-S006,Sucursal adicional 6,Farmacia,Calle Ejemplo 106,Córdoba,Córdoba,,True
+AD-S007,Sucursal adicional 7,Farmacia,Calle Ejemplo 107,La Plata,Buenos Aires,,True
+AD-S008,Sucursal adicional 8,Farmacia,Calle Ejemplo 108,Rosario,Santa Fe,,True
+AD-S009,Sucursal adicional 9,Farmacia,Calle Ejemplo 109,Córdoba,Córdoba,,True
+AD-S010,Sucursal adicional 10,Farmacia,Calle Ejemplo 110,La Plata,Buenos Aires,,True
+AD-S011,Sucursal adicional 11,Farmacia,Calle Ejemplo 111,Rosario,Santa Fe,,True
+AD-S012,Sucursal adicional 12,Farmacia,Calle Ejemplo 112,Córdoba,Córdoba,,True
+AD-S013,Sucursal adicional 13,Farmacia,Calle Ejemplo 113,La Plata,Buenos Aires,,True
+AD-S014,Sucursal adicional 14,Farmacia,Calle Ejemplo 114,Rosario,Santa Fe,,True
+AD-S015,Sucursal adicional 15,Farmacia,Calle Ejemplo 115,Córdoba,Córdoba,,True
+AD-S016,Sucursal adicional 16,Farmacia,Calle Ejemplo 116,La Plata,Buenos Aires,,True
+AD-S017,Sucursal adicional 17,Farmacia,Calle Ejemplo 117,Rosario,Santa Fe,,False
+AD-S018,Sucursal adicional 18,Farmacia,Calle Ejemplo 118,Córdoba,Córdoba,,False
+AD-S019,Sucursal adicional 19,Droguería,Calle Ejemplo 119,La Plata,Buenos Aires,,True
+AD-S020,Sucursal adicional 20,Droguería,Calle Ejemplo 120,Rosario,Santa Fe,,True

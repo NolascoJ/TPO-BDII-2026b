@@ -229,6 +229,15 @@ export function prepareData(provided) {
   return data;
 }
 
-export async function buildDataset() {
-  return prepareData(await readProvided());
+export async function buildDataset({ adicionales = false } = {}) {
+  const originales = await readProvided();
+  if (!adicionales) {
+    return prepareData(originales);
+  }
+  const propios = await readProvided(new URL('../../data/adicionales/', import.meta.url));
+  return prepareData(
+    Object.fromEntries(
+      Object.entries(originales).map(([nombre, filas]) => [nombre, [...filas, ...propios[nombre]]]),
+    ),
+  );
 }

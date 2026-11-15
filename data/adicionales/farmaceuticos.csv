@@ -1,0 +1,21 @@
+id_farmaceutico,nombre,apellido,matricula,cargo,id_sucursal,activo
+AD-F001,Ana,Profesional 1,AD-MAT-1,Director Técnico,AD-S001,True
+AD-F002,Bruno,Profesional 2,AD-MAT-2,Farmacéutico,AD-S002,True
+AD-F003,Carla,Profesional 3,AD-MAT-3,Director Técnico,AD-S003,True
+AD-F004,Diego,Profesional 4,AD-MAT-4,Farmacéutico,AD-S004,True
+AD-F005,Elena,Profesional 5,AD-MAT-5,Director Técnico,AD-S005,True
+AD-F006,Fabio,Profesional 6,AD-MAT-6,Farmacéutico,AD-S006,True
+AD-F007,Gabriela,Profesional 7,AD-MAT-7,Director Técnico,AD-S007,True
+AD-F008,Hugo,Profesional 8,AD-MAT-8,Farmacéutico,AD-S008,True
+AD-F009,Inés,Profesional 9,AD-MAT-9,Director Técnico,AD-S009,True
+AD-F010,Julián,Profesional 10,AD-MAT-10,Farmacéutico,AD-S010,True
+AD-F011,Laura,Profesional 11,AD-MAT-11,Director Técnico,AD-S011,True
+AD-F012,Marcos,Profesional 12,AD-MAT-12,Farmacéutico,AD-S012,True
+AD-F013,Nadia,Profesional 13,AD-MAT-13,Director Técnico,AD-S013,True
+AD-F014,Oscar,Profesional 14,AD-MAT-14,Farmacéutico,AD-S014,True
+AD-F015,Paula,Profesional 15,AD-MAT-15,Director Técnico,AD-S015,True
+AD-F016,Ramiro,Profesional 16,AD-MAT-16,Farmacéutico,AD-S016,True
+AD-F017,Sofía,Profesional 17,AD-MAT-17,Director Técnico,AD-S017,False
+AD-F018,Tomás,Profesional 18,AD-MAT-18,Farmacéutico,AD-S018,False
+AD-F019,Valeria,Profesional 19,AD-MAT-19,Director Técnico,AD-S001,False
+AD-F020,Walter,Profesional 20,AD-MAT-20,Farmacéutico,AD-S002,False

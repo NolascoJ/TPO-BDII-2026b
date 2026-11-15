@@ -29,7 +29,9 @@
     "lint": "eslint . --max-warnings=0",
     "lint:fix": "eslint . --fix --max-warnings=0",
     "format": "prettier --write \"**/*.{js,json,yaml,yml}\"",
-    "format:check": "prettier --check \"**/*.{js,json,yaml,yml}\""
+    "format:check": "prettier --check \"**/*.{js,json,yaml,yml}\"",
+    "data:generate": "node scripts/generate-additional.js",
+    "demo:datos": "node --env-file-if-exists=.env scripts/demo-datos.js"
   },
   "dependencies": {
     "csv-parse": "7.0.3",

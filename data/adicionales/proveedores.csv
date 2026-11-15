@@ -1,0 +1,21 @@
+id_proveedor,razon_social,cuit,tipo,ciudad,provincia,telefono,activo
+AD-PV001,Proveedor adicional 1,30-80000001-1,Laboratorio,La Plata,Buenos Aires,,True
+AD-PV002,Proveedor adicional 2,30-80000002-2,Laboratorio,Rosario,Santa Fe,,True
+AD-PV003,Proveedor adicional 3,30-80000003-3,Laboratorio,Córdoba,Córdoba,,True
+AD-PV004,Proveedor adicional 4,30-80000004-4,Laboratorio,La Plata,Buenos Aires,,True
+AD-PV005,Proveedor adicional 5,30-80000005-5,Laboratorio,Rosario,Santa Fe,,True
+AD-PV006,Proveedor adicional 6,30-80000006-6,Laboratorio,Córdoba,Córdoba,,True
+AD-PV007,Proveedor adicional 7,30-80000007-7,Laboratorio,La Plata,Buenos Aires,,True
+AD-PV008,Proveedor adicional 8,30-80000008-8,Laboratorio,Rosario,Santa Fe,,True
+AD-PV009,Proveedor adicional 9,30-80000009-9,Laboratorio,Córdoba,Córdoba,,True
+AD-PV010,Proveedor adicional 10,30-80000010-0,Laboratorio,La Plata,Buenos Aires,,True
+AD-PV011,Proveedor adicional 11,30-80000011-1,Laboratorio,Rosario,Santa Fe,,True
+AD-PV012,Proveedor adicional 12,30-80000012-2,Laboratorio,Córdoba,Córdoba,,True
+AD-PV013,Proveedor adicional 13,30-80000013-3,Droguería,La Plata,Buenos Aires,,True
+AD-PV014,Proveedor adicional 14,30-80000014-4,Droguería,Rosario,Santa Fe,,True
+AD-PV015,Proveedor adicional 15,30-80000015-5,Droguería,Córdoba,Córdoba,,True
+AD-PV016,Proveedor adicional 16,30-80000016-6,Droguería,La Plata,Buenos Aires,,True
+AD-PV017,Proveedor adicional 17,30-80000017-7,Droguería,Rosario,Santa Fe,,True
+AD-PV018,Proveedor adicional 18,30-80000018-8,Droguería,Córdoba,Córdoba,,True
+AD-PV019,Proveedor adicional 19,30-80000019-9,Droguería,La Plata,Buenos Aires,,False
+AD-PV020,Proveedor adicional 20,30-80000020-0,Droguería,Rosario,Santa Fe,,False

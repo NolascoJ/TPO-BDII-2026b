@@ -39,7 +39,7 @@ function prefijar(valor, prefijo) {
  * Carga los CSV en una base temporal y asigna IDs exclusivos a los nodos de la demo.
  * El finally elimina esos recursos; una terminación forzada puede impedir la limpieza.
  */
-export async function conDemo({ grafo = false } = {}, ejecutar) {
+export async function conDemo({ grafo = false, adicionales = false } = {}, ejecutar) {
   const ejecucion = randomUUID();
   const prefijo = `DEMO-${ejecucion}-`;
   const settings = { ...config(), mongoDatabase: `farmared_demo_${ejecucion.replaceAll('-', '')}` };
@@ -48,7 +48,7 @@ export async function conDemo({ grafo = false } = {}, ejecutar) {
   let salida;
   try {
     await ensureSchema(db);
-    await loadData(client, db);
+    await loadData(client, db, { adicionales });
     let cargaGrafo;
     if (grafo) {
       for (const [nombre, definicion] of Object.entries(definitions)) {
@@ -79,7 +79,9 @@ export async function conDemo({ grafo = false } = {}, ejecutar) {
       entorno: {
         base_temporal: settings.mongoDatabase,
         prefijo_grafo: grafo ? prefijo : null,
-        fuente: 'Los nueve CSV provistos; operaciones de ejemplo solo en la copia temporal',
+        fuente: adicionales
+          ? 'CSV provistos y adicionales; operaciones solo en la copia temporal'
+          : 'Los nueve CSV provistos; operaciones de ejemplo solo en la copia temporal',
       },
       ...salida,
     };

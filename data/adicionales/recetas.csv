@@ -1,0 +1,21 @@
+id_receta,id_cliente,medico,matricula_medico,fecha_emision,tipo,dispensas_autorizadas,dispensas_realizadas,proxima_dispensa,estado
+AD-R001,AD-C004,Médico de ejemplo 1,AD-MED-1,2026-08-17,Tratamiento prolongado,3,3,,Completada
+AD-R002,AD-C005,Médico de ejemplo 2,AD-MED-2,2026-09-16,Tratamiento prolongado,3,1,2026-12-15,Vigente
+AD-R003,AD-C006,Médico de ejemplo 3,AD-MED-3,2026-09-16,Tratamiento prolongado,3,1,2026-12-15,Vigente
+AD-R004,AD-C013,Médico de ejemplo 4,AD-MED-4,2026-09-16,Tratamiento prolongado,3,0,2026-11-14,Vigente
+AD-R005,AD-C001,Médico de ejemplo 5,AD-MED-5,2026-09-16,Tratamiento prolongado,3,0,2026-11-10,Vigente
+AD-R006,AD-C002,Médico de ejemplo 6,AD-MED-6,2026-09-16,Tratamiento prolongado,3,0,2026-11-05,Vigente
+AD-R007,AD-C003,Médico de ejemplo 7,AD-MED-7,2026-09-16,Tratamiento prolongado,3,0,2026-10-26,Vigente
+AD-R008,AD-C008,Médico de ejemplo 8,AD-MED-8,2026-09-16,Tratamiento prolongado,3,0,2026-11-15,Vigente
+AD-R009,AD-C009,Médico de ejemplo 9,AD-MED-9,2026-09-16,Tratamiento prolongado,3,0,2026-11-15,Vigente
+AD-R010,AD-C010,Médico de ejemplo 10,AD-MED-10,2026-09-16,Tratamiento prolongado,3,0,,Vencida
+AD-R011,AD-C004,Médico de ejemplo 11,AD-MED-11,2026-09-16,Simple,1,0,,Vigente
+AD-R012,AD-C009,Médico de ejemplo 12,AD-MED-12,2026-08-12,Simple,1,1,,Completada
+AD-R013,AD-C010,Médico de ejemplo 13,AD-MED-13,2025-10-06,Simple,1,1,,Completada
+AD-R014,AD-C006,Médico de ejemplo 14,AD-MED-14,2026-09-16,Simple,1,0,,Vigente
+AD-R015,AD-C007,Médico de ejemplo 15,AD-MED-15,2026-09-16,Simple,1,0,,Vencida
+AD-R016,AD-C011,Médico de ejemplo 16,AD-MED-16,2026-09-16,Simple,1,0,,Vigente
+AD-R017,AD-C007,Médico de ejemplo 17,AD-MED-17,2026-09-16,Archivada,1,1,,Completada
+AD-R018,AD-C013,Médico de ejemplo 18,AD-MED-18,2026-09-16,Archivada,1,0,,Vigente
+AD-R019,AD-C014,Médico de ejemplo 19,AD-MED-19,2026-09-16,Archivada,1,0,,Vigente
+AD-R020,AD-C015,Médico de ejemplo 20,AD-MED-20,2026-09-16,Archivada,1,0,,Vencida

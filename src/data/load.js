@@ -1,11 +1,10 @@
 import { definitions } from '../db/schema.js';
-import { readProvided, prepareData } from './prepare.js';
+import { buildDataset } from './prepare.js';
 
 // Guardamos todo en una transacción y solo insertamos lo que falta
 // Si repetimos la carga, el stock, las bajas y las dispensas quedan como estaban
-export async function loadData(client, db) {
-  const provided = await readProvided();
-  const data = prepareData(provided);
+export async function loadData(client, db, opciones = {}) {
+  const data = await buildDataset(opciones);
   const session = client.startSession();
 
   try {

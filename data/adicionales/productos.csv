@@ -1,0 +1,21 @@
+id_producto,nombre,principio_activo,categoria,presentacion,condicion_venta,precio_unit,id_proveedor,activo
+AD-P001,Producto adicional 1,Compuesto de ejemplo 1,Cuidado personal,Caja de 10 unidades,Venta libre,4999,AD-PV019,True
+AD-P002,Producto adicional 2,Compuesto de ejemplo 2,Cuidado personal,Caja de 10 unidades,Venta libre,5000,AD-PV002,True
+AD-P003,Producto adicional 3,Compuesto de ejemplo 3,Cuidado personal,Caja de 10 unidades,Venta libre,5001,AD-PV003,True
+AD-P004,Producto adicional 4,Compuesto de ejemplo 4,Cuidado personal,Caja de 10 unidades,Venta libre,1000,AD-PV004,True
+AD-P005,Producto adicional 5,Compuesto de ejemplo 5,Cuidado personal,Caja de 10 unidades,Venta libre,1000,AD-PV005,True
+AD-P006,Producto adicional 6,Compuesto de ejemplo 6,Cuidado personal,Caja de 10 unidades,Venta libre,1000,AD-PV006,True
+AD-P007,Producto adicional 7,Compuesto de ejemplo 7,Cuidado personal,Caja de 10 unidades,Venta libre,1000,AD-PV007,True
+AD-P008,Producto adicional 8,Compuesto de ejemplo 8,Cuidado personal,Caja de 10 unidades,Venta libre,1000,AD-PV008,False
+AD-P009,Producto adicional 9,Compuesto de ejemplo 9,Medicamento,Caja de 10 unidades,Bajo receta,1000,AD-PV009,True
+AD-P010,Producto adicional 10,Compuesto de ejemplo 10,Medicamento,Caja de 10 unidades,Bajo receta,1000,AD-PV010,True
+AD-P011,Producto adicional 11,Compuesto de ejemplo 11,Medicamento,Caja de 10 unidades,Bajo receta,1000,AD-PV011,True
+AD-P012,Producto adicional 12,Compuesto de ejemplo 12,Medicamento,Caja de 10 unidades,Bajo receta,1000,AD-PV012,True
+AD-P013,Producto adicional 13,Compuesto de ejemplo 13,Medicamento,Caja de 10 unidades,Bajo receta,1000,AD-PV013,True
+AD-P014,Producto adicional 14,Compuesto de ejemplo 14,Medicamento,Caja de 10 unidades,Bajo receta,1000,AD-PV014,True
+AD-P015,Producto adicional 15,Compuesto de ejemplo 15,Medicamento,Caja de 10 unidades,Bajo receta,1000,AD-PV015,True
+AD-P016,Producto adicional 16,Compuesto de ejemplo 16,Medicamento,Caja de 10 unidades,Bajo receta,1000,AD-PV016,False
+AD-P017,Producto adicional 17,Compuesto de ejemplo 17,Medicamento,Caja de 10 unidades,Bajo receta archivada,1000,AD-PV017,True
+AD-P018,Producto adicional 18,Compuesto de ejemplo 18,Medicamento,Caja de 10 unidades,Bajo receta archivada,1000,AD-PV018,True
+AD-P019,Producto adicional 19,Compuesto de ejemplo 19,Medicamento,Caja de 10 unidades,Bajo receta archivada,1000,AD-PV019,False
+AD-P020,Producto adicional 20,Compuesto de ejemplo 20,Medicamento,Caja de 10 unidades,Bajo receta archivada,1000,AD-PV020,False

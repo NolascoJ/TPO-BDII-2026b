@@ -1,0 +1,14 @@
+{
+  "fecha_base": "2026-11-15",
+  "registros": {
+    "clientes": 20,
+    "sucursales": 20,
+    "farmaceuticos": 20,
+    "proveedores": 20,
+    "productos": 20,
+    "stock_lotes": 20,
+    "recetas": 20,
+    "ventas": 20,
+    "detalle_ventas": 20
+  }
+}

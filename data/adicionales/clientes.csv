@@ -1,0 +1,21 @@
+id_cliente,nombre,apellido,dni,email,telefono,ciudad,provincia,obra_social,nro_afiliado,activo
+AD-C001,Ana,Ejemplo 1,80000001,cliente1@example.test,01155550001,La Plata,Buenos Aires,OSDE,AF-1,True
+AD-C002,Bruno,Ejemplo 2,80000002,cliente2@example.test,01155550002,Rosario,Santa Fe,Swiss Medical,AF-2,True
+AD-C003,Carla,Ejemplo 3,80000003,cliente3@example.test,01155550003,Córdoba,Córdoba,PAMI,AF-3,True
+AD-C004,Diego,Ejemplo 4,80000004,cliente4@example.test,01155550004,La Plata,Buenos Aires,IOMA,AF-4,True
+AD-C005,Elena,Ejemplo 5,80000005,cliente5@example.test,01155550005,Rosario,Santa Fe,Galeno,AF-5,True
+AD-C006,Fabio,Ejemplo 6,80000006,cliente6@example.test,01155550006,Córdoba,Córdoba,Sin cobertura,,True
+AD-C007,Gabriela,Ejemplo 7,80000007,cliente7@example.test,01155550007,La Plata,Buenos Aires,OSDE,AF-7,True
+AD-C008,Hugo,Ejemplo 8,80000008,cliente8@example.test,01155550008,Rosario,Santa Fe,Swiss Medical,AF-8,True
+AD-C009,Inés,Ejemplo 9,80000009,cliente9@example.test,01155550009,Córdoba,Córdoba,PAMI,AF-9,True
+AD-C010,Julián,Ejemplo 10,80000010,cliente10@example.test,01155550010,La Plata,Buenos Aires,IOMA,AF-10,True
+AD-C011,Laura,Ejemplo 11,80000011,cliente11@example.test,01155550011,Rosario,Santa Fe,Galeno,AF-11,True
+AD-C012,Marcos,Ejemplo 12,80000012,cliente12@example.test,01155550012,Córdoba,Córdoba,Sin cobertura,,True
+AD-C013,Nadia,Ejemplo 13,80000013,cliente13@example.test,01155550013,La Plata,Buenos Aires,OSDE,AF-13,True
+AD-C014,Oscar,Ejemplo 14,80000014,cliente14@example.test,01155550014,Rosario,Santa Fe,Swiss Medical,AF-14,True
+AD-C015,Paula,Ejemplo 15,80000015,cliente15@example.test,01155550015,Córdoba,Córdoba,PAMI,AF-15,True
+AD-C016,Ramiro,Ejemplo 16,80000016,cliente16@example.test,01155550016,La Plata,Buenos Aires,IOMA,AF-16,True
+AD-C017,Sofía,Ejemplo 17,80000017,cliente17@example.test,01155550017,Rosario,Santa Fe,Galeno,AF-17,False
+AD-C018,Tomás,Ejemplo 18,80000018,cliente18@example.test,01155550018,Córdoba,Córdoba,Sin cobertura,,False
+AD-C019,Valeria,Ejemplo 19,80000019,cliente19@example.test,01155550019,La Plata,Buenos Aires,OSDE,AF-19,False
+AD-C020,Walter,Ejemplo 20,80000020,cliente20@example.test,01155550020,Rosario,Santa Fe,Swiss Medical,AF-20,False
