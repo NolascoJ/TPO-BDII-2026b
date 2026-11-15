@@ -10,6 +10,7 @@ import { q09 } from './q09.js';
 import { q10 } from './q10.js';
 import { q11 } from './q11.js';
 import { q12 } from './q12.js';
+import { q13 } from './q13.js';
 import { q14 } from './q14.js';
 
 /** Cada integrante registra aquí su función y los motores que necesita. */
@@ -26,5 +27,6 @@ export const queries = {
   q10: { run: q10, engines: ['neo4j'] },
   q11: { run: q11, engines: ['mongo'] },
   q12: { run: q12, engines: ['neo4j'] },
+  q13: { run: q13, engines: ['mongo'] },
   q14: { run: q14, engines: ['mongo'] },
 };
