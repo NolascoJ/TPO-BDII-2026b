@@ -12,7 +12,7 @@ import {
   siguienteEstadoReceta,
   ADVERTENCIA_RECETA_NO_UTILIZADA,
 } from '../services/venta/receta.js';
-import { registrarEvento } from '../services/venta/eventos.js';
+import { registrarEvento } from '../outbox/registrar.js';
 import { q15 } from './q15.js';
 
 const sinId = { projection: { _id: 0 } };
