@@ -1,6 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { connectNeo4j } from '../../src/db/connections.js';
+import { randomUUID } from 'node:crypto';
+import { connectMongo, connectNeo4j } from '../../src/db/connections.js';
+import { ensureSchema } from '../../src/db/schema.js';
+import { loadData } from '../../src/data/load.js';
+import { q14 } from '../../src/queries/q14.js';
+import { cargarGrafo, vaciarGrafo } from '../../src/graph/bootstrap.js';
 import { config } from '../../src/config.js';
 import { ensureGraphSchema } from '../../src/graph/schema.js';
 import {
@@ -320,6 +325,145 @@ test('Neo4j real: proyección con guardia de versión, relaciones y dependencias
     });
   } finally {
     await limpiar();
+    await driver.close();
+  }
+});
+
+// Esta prueba carga el dataset real, con los mismos IDs que la proyección de trabajo: como
+// Neo4j Community tiene una sola base, vacía el grafo antes y después. Para volver a tener la
+// proyección de trabajo: npm run graph:load
+test('Neo4j real: carga inicial desde MongoDB, idempotente y con entidades sin ventas', async (t) => {
+  const settings = {
+    ...config(),
+    mongoDatabase: `farmared_test_${randomUUID().replaceAll('-', '')}`,
+  };
+  const database = settings.neo4jDatabase;
+  const { client, db } = await connectMongo(settings);
+  const driver = await connectNeo4j(settings);
+  const contexto = { db, driver, neo4jDatabase: database };
+  const leer = async (cypher, params = {}) =>
+    (await driver.executeQuery(cypher, params, { database })).records.map((r) => r.toObject());
+  const conteos = async () => {
+    const [r] = await leer(`
+      RETURN
+        COUNT { (:Sucursal) } AS sucursales, COUNT { (:Producto) } AS productos,
+        COUNT { (:Cliente) } AS clientes, COUNT { (:Farmaceutico) } AS farmaceuticos,
+        COUNT { (:Receta) } AS recetas, COUNT { (:Venta) } AS ventas,
+        COUNT { ()-[:TRABAJA_EN]->() } AS trabaja_en, COUNT { ()-[:TIENE_RECETA]->() } AS tiene_receta,
+        COUNT { ()-[:REALIZO]->() } AS realizo, COUNT { ()-[:ATENDIDA_POR]->() } AS atendida_por,
+        COUNT { ()-[:REGISTRADA_EN]->() } AS registrada_en, COUNT { ()-[:USA_RECETA]->() } AS usa_receta,
+        COUNT { ()-[:INCLUYE]->() } AS incluye`);
+    return Object.fromEntries(Object.entries(r).map(([k, v]) => [k, v.toNumber()]));
+  };
+
+  try {
+    await ensureSchema(db);
+    await loadData(client, db);
+    // Una venta creada por q14 (origen operacion) también tiene que entrar en la carga
+    await q14(
+      { client, db },
+      {
+        id_venta: 'V-T3-BOOT',
+        id_cliente: 'C005',
+        id_farmaceutico: 'F001',
+        medio_pago: 'Efectivo',
+        items: [{ id_producto: 'PRD001', cantidad: 2 }],
+      },
+    );
+
+    const primera = await cargarGrafo(contexto, { reset: true });
+    const esperado = {
+      sucursales: 5,
+      productos: 13,
+      clientes: 8,
+      farmaceuticos: 7,
+      recetas: 9,
+      ventas: 17,
+    };
+    for (const [coleccion, cantidad] of Object.entries(esperado)) {
+      assert.deepEqual(primera.entidades[coleccion], {
+        fuente: cantidad,
+        aplicados: cantidad,
+        sin_cambios: 0,
+      });
+    }
+    const despuesPrimera = await conteos();
+
+    await t.test('Nodos y relaciones esperados con el dataset provisto más la venta de q14', () => {
+      assert.deepEqual(despuesPrimera, {
+        ...esperado,
+        trabaja_en: 7,
+        tiene_receta: 9,
+        realizo: 17,
+        atendida_por: 17,
+        registrada_en: 17,
+        usa_receta: 10,
+        incluye: 23,
+      });
+    });
+
+    await t.test('Repetir la carga no aplica ni duplica nada', async () => {
+      const segunda = await cargarGrafo(contexto);
+      for (const [coleccion, cantidad] of Object.entries(esperado)) {
+        assert.deepEqual(segunda.entidades[coleccion], {
+          fuente: cantidad,
+          aplicados: 0,
+          sin_cambios: cantidad,
+        });
+      }
+      assert.deepEqual(await conteos(), despuesPrimera);
+    });
+
+    await t.test('Incluye entidades sin ventas y conserva la atención de inactivos', async () => {
+      const [r] = await leer(`
+        MATCH (c8:Cliente {id_cliente: 'C008'}), (f7:Farmaceutico {id_farmaceutico: 'F007'})
+        MATCH (:Cliente {id_cliente: 'C004'})-[:REALIZO]->(v1:Venta {id_venta: 'V001'})
+              -[:ATENDIDA_POR]->(f4:Farmaceutico)
+        MATCH (v1)-[:REGISTRADA_EN]->(s:Sucursal)
+        RETURN c8.activo AS c8_activo, COUNT { (c8)-[:REALIZO]->() } AS c8_ventas,
+               COUNT { (f7)<-[:ATENDIDA_POR]-() } AS f7_ventas,
+               f4.id_farmaceutico AS f4, f4.activo AS f4_activo, s.id_sucursal AS sucursal`);
+      assert.equal(r.c8_activo, false);
+      assert.equal(r.c8_ventas.toNumber(), 0);
+      assert.equal(r.f7_ventas.toNumber(), 0);
+      assert.equal(r.f4, 'F004');
+      assert.equal(r.f4_activo, false);
+      assert.equal(r.sucursal, 'S002');
+    });
+
+    await t.test('La venta de q14 conserva fecha con hora, total y precio histórico', async () => {
+      const venta = await db.collection('ventas').findOne({ id_venta: 'V-T3-BOOT' });
+      const [r] = await leer(
+        `MATCH (v:Venta {id_venta: 'V-T3-BOOT'})-[i:INCLUYE]->(p:Producto)
+         RETURN v.fecha AS fecha, v.total AS total, v.origen AS origen,
+                i.precio_unit AS precio, p.id_producto AS producto`,
+      );
+      assert.equal(r.fecha.toStandardDate().getTime(), venta.fecha.getTime());
+      assert.equal(r.total.toNumber(), 5600);
+      assert.equal(r.origen, 'operacion');
+      assert.equal(r.precio.toNumber(), 2800);
+      assert.equal(r.producto, 'PRD001');
+    });
+
+    await t.test('Un cambio en MongoDB con versión mayor entra en la siguiente carga', async () => {
+      await db
+        .collection('clientes')
+        .updateOne(
+          { id_cliente: 'C001' },
+          { $set: { telefono: '1100000000' }, $inc: { version: 1 } },
+        );
+      const tercera = await cargarGrafo(contexto);
+      assert.equal(tercera.entidades.clientes.aplicados, 1);
+      const [r] = await leer(
+        "MATCH (c:Cliente {id_cliente: 'C001'}) RETURN c.telefono AS tel, c.version AS v",
+      );
+      assert.equal(r.tel, '1100000000');
+      assert.equal(r.v.toNumber(), 2);
+    });
+  } finally {
+    await vaciarGrafo(driver, database);
+    await db.dropDatabase();
+    await client.close();
     await driver.close();
   }
 });
