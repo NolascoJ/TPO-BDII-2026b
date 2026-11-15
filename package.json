@@ -18,6 +18,7 @@
     "query": "node --env-file-if-exists=.env scripts/query.js",
     "demo:q14": "node --env-file-if-exists=.env scripts/demo-q14.js",
     "demo:q15": "node --env-file-if-exists=.env scripts/demo-q15.js",
+    "demo:grafo": "node --env-file-if-exists=.env scripts/demo-grafo.js",
     "test": "node --test test/*.test.js",
     "test:integration": "node --env-file-if-exists=.env --test test/integration/*.test.js",
     "lint": "eslint . --max-warnings=0",
