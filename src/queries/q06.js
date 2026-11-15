@@ -3,7 +3,7 @@ import { inicioDiaUTC } from '../services/venta/fechas.js';
 /**
  * q06: tratamientos prolongados vigentes con próxima dispensa anterior a hoy (MongoDB).
  * Calcula el inicio del día UTC al invocarse; excluye fechas nulas y las de hoy.
- * No modifica el estado de las recetas ni filtra por actividad del cliente.
+ * Incluye clientes inactivos.
  * @param {{db: import('mongodb').Db}} context Conexión compartida.
  * @param {object} _params Sin parámetros de negocio.
  * @returns {Promise<object[]>} Recetas con el objeto cliente completo, ordenadas por

@@ -38,14 +38,9 @@ function validarEvento(evento) {
 }
 
 /**
- * Registra un evento pendiente de sincronización en `outbox`, dentro de la transacción
- * recibida. No confirma por su cuenta: el evento se persiste solo si la transacción
- * de negocio se confirma.
- *
- * Quien llama debe pasar la misma sesión usada para modificar la entidad y dejar
- * propagar los errores para abortar la operación completa. Los duplicados se rechazan:
- * la idempotencia del pedido se resuelve en el servicio de negocio, antes de escribir.
- * No llama a Neo4j; el procesamiento de pendientes ocurre después del commit.
+ * Inserta un evento pendiente usando la misma sesión que modifica la entidad.
+ * Los errores se propagan para abortar la transacción; los duplicados se rechazan.
+ * La sincronización con Neo4j se ejecuta después del commit.
  *
  * @param {import('mongodb').Db} db
  * @param {import('mongodb').ClientSession} session

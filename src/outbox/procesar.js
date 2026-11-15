@@ -31,18 +31,14 @@ const mensajeError = (error) =>
 const ordenPendientes = { intentos: 1, creado_en: 1, id_evento: 1 };
 
 /**
- * Procesa un lote finito: prioriza menos intentos, luego creado_en e id_evento. Ejecutar una sola
- * instancia a la vez: no implementa exclusión distribuida entre procesadores.
+ * Procesa un lote ordenado por intentos, creado_en e id_evento. Requiere una sola instancia.
+ * Cada evento se intenta una vez por invocación; los fallidos quedan pendientes.
+ * Los errores no reintentables requieren corregir el evento antes de repetir el comando.
+ * intentos cuenta ejecuciones iniciadas, no reintentos internos del driver.
  *
- * Cada evento seleccionado se intenta una vez por invocación. Los fallos quedan Pendiente
- * para una ejecución posterior; id_evento permite reintentar uno sin que otros lo bloqueen.
- * Los errores no reintentables se informan para corregirlos antes de volver a ejecutar.
- * intentos cuenta intentos iniciados, exitosos o fallidos, no los reintentos internos del driver.
- *
- * Solo marca Procesado tras recibir aplicado u obsoleto de Neo4j. Si MongoDB falla al
- * confirmar esa marca, aborta el lote y propaga el error: el evento puede repetirse gracias
- * a la guardia de versión del grafo. No hay transacción distribuida entre los motores.
- * No modifica ventas, clientes, recetas ni contenido de eventos.
+ * Marca Procesado al recibir aplicado u obsoleto de Neo4j. Si falla una escritura en MongoDB,
+ * detiene el lote y propaga el error. La guardia de versión permite repetir el evento
+ * cuando Neo4j confirmó el cambio pero MongoDB no registró la marca.
  *
  * @param {{db: import('mongodb').Db, driver: import('neo4j-driver').Driver, neo4jDatabase: string}} context
  * @param {{limite?: number, id_evento?: string}} opciones

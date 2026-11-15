@@ -1,4 +1,3 @@
-# Documentación local: no incluir ningún contenido de docs en commits.
 /docs/
 node_modules/
 .env

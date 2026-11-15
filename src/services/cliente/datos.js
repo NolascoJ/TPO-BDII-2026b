@@ -93,7 +93,7 @@ export function validarSolicitud(params) {
  * Devuelve los datos finales de contacto/cobertura sin modificar sus argumentos.
  * Sin cobertura implica afiliado null. Al cambiar de obra social, si no se indica
  * afiliado, se limpia el anterior para no asignar a la nueva cobertura un número ajeno.
- * Con cobertura se admite afiliado null, como en el modelo y la carga existentes.
+ * Con cobertura se admite afiliado null.
  */
 export function aplicarDatos(actual, datos) {
   const resultado = { ...actual, ...datos };

@@ -15,8 +15,7 @@ import { q13 } from '../../src/queries/q13.js';
 import { q14 } from '../../src/queries/q14.js';
 import { diasDesdeHoy, enTransaccion } from './ventas-helpers.js';
 
-// Como neo4j.test.js, requiere un grafo dedicado: lo vacía al iniciar y terminar.
-// test:integration ejecuta los archivos en serie para que sus reconstrucciones no se crucen.
+// Vacía el grafo al iniciar y terminar. Requiere una base de pruebas y ejecución en serie.
 test('outbox y CLI con MongoDB y Neo4j reales: entrega, dependencias y recuperación', async (t) => {
   const settings = {
     ...config(),
@@ -245,7 +244,7 @@ test('outbox y CLI con MongoDB y Neo4j reales: entrega, dependencias y recuperac
           (await leer("MATCH (c:Cliente {id_cliente:'C-INVALIDO'}) RETURN c")).length,
           0,
         );
-        // Corrección de la fixture dañada: el siguiente intento debe funcionar.
+        // Corrige la versión antes del reintento.
         await outbox.updateOne(opciones, { $set: { 'contenido.version': 1 } });
         assert.equal(cli('procesar', opciones).status, 0);
         assert.equal(cli('estado').respuesta.data.pendientes, 0);
