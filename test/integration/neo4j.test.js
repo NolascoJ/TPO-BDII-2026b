@@ -6,6 +6,7 @@ import { ensureSchema } from '../../src/db/schema.js';
 import { loadData } from '../../src/data/load.js';
 import { q14 } from '../../src/queries/q14.js';
 import { cargarGrafo, vaciarGrafo } from '../../src/graph/bootstrap.js';
+import { aplicarEvento } from '../../src/graph/eventos.js';
 import { config } from '../../src/config.js';
 import { ensureGraphSchema } from '../../src/graph/schema.js';
 import {
@@ -459,6 +460,192 @@ test('Neo4j real: carga inicial desde MongoDB, idempotente y con entidades sin v
       );
       assert.equal(r.tel, '1100000000');
       assert.equal(r.v.toNumber(), 2);
+    });
+  } finally {
+    await vaciarGrafo(driver, database);
+    await db.dropDatabase();
+    await client.close();
+    await driver.close();
+  }
+});
+
+// Igual que la carga inicial: usa los IDs reales, así que vacía el grafo antes y después
+test('Neo4j real: aplicación de eventos de la outbox', async (t) => {
+  const settings = {
+    ...config(),
+    mongoDatabase: `farmared_test_${randomUUID().replaceAll('-', '')}`,
+  };
+  const database = settings.neo4jDatabase;
+  const { client, db } = await connectMongo(settings);
+  const driver = await connectNeo4j(settings);
+  const aplicar = (evento) => aplicarEvento(driver, database, evento);
+  const leer = async (cypher, params = {}) =>
+    (await driver.executeQuery(cypher, params, { database })).records.map((r) => r.toObject());
+  const evento = (tipo_entidad, contenido, idCampo) => ({
+    id_evento: `${tipo_entidad}:${contenido[idCampo]}:${contenido.version}`,
+    tipo_entidad,
+    id_entidad: contenido[idCampo],
+    version: contenido.version,
+    contenido,
+  });
+  const totalRelaciones = async () =>
+    (await leer('MATCH ()-[r]->() RETURN count(r) AS n'))[0].n.toNumber();
+
+  try {
+    await ensureSchema(db);
+    await loadData(client, db);
+    await cargarGrafo({ db, driver, neo4jDatabase: database }, { reset: true });
+    const { _id, ...recetaV1 } = await db.collection('recetas').findOne({ id_receta: 'RC004' });
+
+    // Venta real con receta (RC004 pasa de 1/3 a 2/3): q14 deja los eventos en la outbox
+    await q14(
+      { client, db },
+      {
+        id_venta: 'V-T3-EV',
+        id_cliente: 'C006',
+        id_farmaceutico: 'F001',
+        id_receta: 'RC004',
+        medio_pago: 'Obra social',
+        items: [{ id_producto: 'PRD003', cantidad: 1 }],
+      },
+    );
+    const pendientes = await db
+      .collection('outbox')
+      .find({ estado: 'Pendiente' })
+      .sort({ creado_en: 1, id_evento: 1 })
+      .toArray();
+
+    await t.test('Los eventos de q14 se aplican y la venta aparece en el grafo', async () => {
+      assert.deepEqual(pendientes.map((e) => e.id_evento).sort(), [
+        'receta:RC004:2',
+        'venta:V-T3-EV:1',
+      ]);
+      for (const e of pendientes) {
+        assert.deepEqual(await aplicar(e), { estado: 'aplicado' });
+      }
+      const [r] = await leer(`
+        MATCH (:Cliente {id_cliente: 'C006'})-[:REALIZO]->(v:Venta {id_venta: 'V-T3-EV'})
+              -[:USA_RECETA]->(rc:Receta {id_receta: 'RC004'})
+        MATCH (v)-[:REGISTRADA_EN]->(s:Sucursal)
+        RETURN rc.dispensas_realizadas AS realizadas, rc.version AS version,
+               rc.proxima_dispensa IS NOT NULL AS con_proxima, s.id_sucursal AS sucursal,
+               COUNT { (v)-[:INCLUYE]->(:Producto {id_producto: 'PRD003'}) } AS items`);
+      assert.equal(r.realizadas.toNumber(), 2);
+      assert.equal(r.version.toNumber(), 2);
+      assert.equal(r.con_proxima, true);
+      assert.equal(r.sucursal, 'S001');
+      assert.equal(r.items.toNumber(), 1);
+    });
+
+    await t.test('Repetir los eventos da obsoleto y no duplica nada', async () => {
+      const antes = await totalRelaciones();
+      for (const e of pendientes) {
+        assert.deepEqual(await aplicar(e), { estado: 'obsoleto' });
+      }
+      assert.equal(await totalRelaciones(), antes);
+    });
+
+    await t.test('Un evento viejo de receta no revierte el estado más reciente', async () => {
+      assert.deepEqual(await aplicar(evento('receta', recetaV1, 'id_receta')), {
+        estado: 'obsoleto',
+      });
+      const [r] = await leer(
+        "MATCH (rc:Receta {id_receta: 'RC004'}) RETURN rc.dispensas_realizadas AS n",
+      );
+      assert.equal(r.n.toNumber(), 2);
+    });
+
+    await t.test('Dependencia faltante: error reintentable, y se resuelve en orden', async () => {
+      const ventaQ14 = pendientes.find((e) => e.tipo_entidad === 'venta').contenido;
+      const huerfana = evento(
+        'venta',
+        {
+          ...ventaQ14,
+          id_venta: 'V-T3-HUERF',
+          id_cliente: 'C-T3',
+          id_receta: null,
+          tipo: 'Venta libre',
+          items: [{ ...ventaQ14.items[0], id_detalle: 'V-T3-HUERF-01' }],
+        },
+        'id_venta',
+      );
+      await assert.rejects(
+        aplicar(huerfana),
+        (error) =>
+          error.code === 'DEPENDENCIA_FALTANTE' &&
+          error.details.reintentable === true &&
+          error.details.faltantes.Cliente[0] === 'C-T3',
+      );
+      assert.equal((await leer("MATCH (v:Venta {id_venta: 'V-T3-HUERF'}) RETURN v")).length, 0);
+
+      // Llega el evento del cliente (como lo generaría q13) y el reintento de la venta funciona
+      const { _id: _c, ...base } = await db.collection('clientes').findOne({ id_cliente: 'C005' });
+      const nuevo = { ...base, id_cliente: 'C-T3', dni: '99999999', version: 1 };
+      assert.deepEqual(await aplicar(evento('cliente', nuevo, 'id_cliente')), {
+        estado: 'aplicado',
+      });
+      assert.deepEqual(await aplicar(huerfana), { estado: 'aplicado' });
+    });
+
+    await t.test('Cliente modificado y dado de baja: se proyecta sin perder ventas', async () => {
+      const { _id: _c, ...c006 } = await db.collection('clientes').findOne({ id_cliente: 'C006' });
+      const baja = { ...c006, telefono: '1100000000', activo: false, version: 2 };
+      assert.deepEqual(await aplicar(evento('cliente', baja, 'id_cliente')), {
+        estado: 'aplicado',
+      });
+      const [r] = await leer(`
+        MATCH (c:Cliente {id_cliente: 'C006'})
+        RETURN c.activo AS activo, c.telefono AS tel, COUNT { (c)-[:REALIZO]->() } AS ventas`);
+      assert.equal(r.activo, false);
+      assert.equal(r.tel, '1100000000');
+      assert.equal(r.ventas.toNumber(), 5);
+    });
+
+    await t.test('Farmacéutico que cambia de sucursal: sus ventas no se mueven', async () => {
+      const { _id: _f, ...f001 } = await db
+        .collection('farmaceuticos')
+        .findOne({ id_farmaceutico: 'F001' });
+      const cambio = { ...f001, id_sucursal: 'S002', version: 2 };
+      assert.deepEqual(await aplicar(evento('farmaceutico', cambio, 'id_farmaceutico')), {
+        estado: 'aplicado',
+      });
+      const [r] = await leer(`
+        MATCH (f:Farmaceutico {id_farmaceutico: 'F001'})
+        RETURN [(f)-[:TRABAJA_EN]->(s) | s.id_sucursal] AS actual,
+               [(f)<-[:ATENDIDA_POR]-(v)-[:REGISTRADA_EN]->(s) | s.id_sucursal] AS historicas`);
+      assert.deepEqual(r.actual, ['S002']);
+      assert.ok(r.historicas.length > 0);
+      assert.ok(r.historicas.every((s) => s === 'S001'));
+    });
+
+    await t.test('Sucursal dada de baja', async () => {
+      const { _id: _s, ...s004 } = await db
+        .collection('sucursales')
+        .findOne({ id_sucursal: 'S004' });
+      assert.deepEqual(
+        await aplicar(evento('sucursal', { ...s004, activo: false, version: 2 }, 'id_sucursal')),
+        { estado: 'aplicado' },
+      );
+      const [r] = await leer("MATCH (s:Sucursal {id_sucursal: 'S004'}) RETURN s.activo AS activo");
+      assert.equal(r.activo, false);
+    });
+
+    await t.test('Evento inválido: error no reintentable y sin escritura', async () => {
+      const valido = pendientes.find((e) => e.tipo_entidad === 'receta');
+      const invalidos = [
+        { ...valido, tipo_entidad: 'stock' },
+        { ...valido, id_entidad: 'RC999' },
+        { ...valido, version: 9 },
+        { ...valido, contenido: null },
+      ];
+      const antes = await totalRelaciones();
+      for (const e of invalidos) {
+        await assert.rejects(
+          aplicar(e),
+          (error) => error.code === 'EVENTO_INVALIDO' && error.details.reintentable === false,
+        );
+      }
+      assert.equal(await totalRelaciones(), antes);
     });
   } finally {
     await vaciarGrafo(driver, database);

@@ -53,6 +53,8 @@ async function verificarDependencias(tx, requeridas) {
   if (Object.keys(faltantes).length > 0) {
     throw new AppError('DEPENDENCIA_FALTANTE', 'Faltan nodos referenciados en el grafo', {
       faltantes,
+      // Puede resolverse cuando se aplique el evento de la entidad que falta
+      reintentable: true,
     });
   }
 }
