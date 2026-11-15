@@ -14,16 +14,22 @@ export async function connectMongo(settings = config()) {
   }
 }
 
-// Abrimos Neo4j. Al terminar de usarlo hay que cerrar las sesiones y el driver
-export async function connectNeo4j(settings = config()) {
+// Crea el driver sin conectarse todavía. El procesador usa esta variante para registrar
+// las fallas de conexión como intentos fallidos de cada evento. Quien llama debe cerrarlo.
+export function crearDriverNeo4j(settings = config(), opciones = {}) {
   if (!settings.neo4jUri || !settings.neo4jUser || !settings.neo4jPassword) {
     throw new Error('Falta configuración de Neo4j');
   }
-  const driver = neo4j.driver(
+  return neo4j.driver(
     settings.neo4jUri,
     neo4j.auth.basic(settings.neo4jUser, settings.neo4jPassword),
-    { connectionTimeout: 3000 },
+    { connectionTimeout: 3000, ...opciones },
   );
+}
+
+// Abrimos Neo4j. Al terminar de usarlo hay que cerrar las sesiones y el driver
+export async function connectNeo4j(settings = config()) {
+  const driver = crearDriverNeo4j(settings);
   try {
     await driver.getServerInfo({ database: settings.neo4jDatabase });
     return driver;
