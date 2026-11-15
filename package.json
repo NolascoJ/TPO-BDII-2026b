@@ -11,6 +11,7 @@
     "infra:down": "docker compose down",
     "db:wait": "node --env-file-if-exists=.env scripts/wait.js",
     "db:schema": "node --env-file-if-exists=.env scripts/schema.js",
+    "graph:schema": "node --env-file-if-exists=.env scripts/graph-schema.js",
     "data:check": "node --env-file-if-exists=.env scripts/check-data.js",
     "data:load": "node --env-file-if-exists=.env scripts/load.js",
     "query": "node --env-file-if-exists=.env scripts/query.js",
