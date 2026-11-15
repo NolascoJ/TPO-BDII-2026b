@@ -7,6 +7,11 @@ import { loadData } from '../../src/data/load.js';
 import { q14 } from '../../src/queries/q14.js';
 import { cargarGrafo, vaciarGrafo } from '../../src/graph/bootstrap.js';
 import { aplicarEvento } from '../../src/graph/eventos.js';
+import { q03 } from '../../src/queries/q03.js';
+import { q04 } from '../../src/queries/q04.js';
+import { q05 } from '../../src/queries/q05.js';
+import { q10 } from '../../src/queries/q10.js';
+import { q12 } from '../../src/queries/q12.js';
 import { config } from '../../src/config.js';
 import { ensureGraphSchema } from '../../src/graph/schema.js';
 import {
@@ -646,6 +651,153 @@ test('Neo4j real: aplicación de eventos de la outbox', async (t) => {
         );
       }
       assert.equal(await totalRelaciones(), antes);
+    });
+  } finally {
+    await vaciarGrafo(driver, database);
+    await db.dropDatabase();
+    await client.close();
+    await driver.close();
+  }
+});
+
+// Consultas del grafo con el dataset provisto. Las fechas de ventas y recetas se corren para
+// que "hoy" equivalga al 15/11/2026: así los resultados no cambian con el calendario.
+// Igual que las anteriores, vacía el grafo antes y después.
+test('Neo4j real: consultas q03, q04, q05, q10 y q12 sobre el dataset provisto', async (t) => {
+  const settings = {
+    ...config(),
+    mongoDatabase: `farmared_test_${randomUUID().replaceAll('-', '')}`,
+  };
+  const database = settings.neo4jDatabase;
+  const { client, db } = await connectMongo(settings);
+  const driver = await connectNeo4j(settings);
+  const ctx = { driver, neo4jDatabase: database };
+
+  try {
+    await ensureSchema(db);
+    await loadData(client, db);
+    const hoy = new Date();
+    const desplazamiento =
+      Date.UTC(hoy.getUTCFullYear(), hoy.getUTCMonth(), hoy.getUTCDate()) - Date.UTC(2026, 10, 15);
+    const correr = (campo) => ({ [campo]: { $add: ['$' + campo, desplazamiento] } });
+    await db.collection('ventas').updateMany({}, [{ $set: correr('fecha') }]);
+    await db
+      .collection('recetas')
+      .updateMany({}, [{ $set: { ...correr('fecha_emision'), ...correr('proxima_dispensa') } }]);
+    await cargarGrafo({ db, driver, neo4jDatabase: database }, { reset: true });
+
+    await t.test(
+      'q03: historial de C006 en orden cronológico, receta antes que venta',
+      async () => {
+        const { cliente, historial } = await q03(ctx, { id_cliente: 'C006' });
+        assert.equal(cliente.id_cliente, 'C006');
+        assert.deepEqual(
+          historial.map((e) => e.id_venta ?? e.id_receta),
+          ['RC003', 'V006', 'V007', 'RC004', 'V008', 'V016'],
+        );
+        assert.ok(historial.every((e, i) => i === 0 || historial[i - 1].fecha <= e.fecha));
+        const v006 = historial.find((e) => e.id_venta === 'V006');
+        assert.equal(v006.evento, 'venta');
+        assert.equal(v006.id_receta, 'RC003');
+        assert.equal(v006.farmaceutico.id_farmaceutico, 'F002');
+        assert.equal(v006.sucursal.id_sucursal, 'S001');
+        assert.equal(v006.items.length, 2);
+        assert.equal(
+          v006.items.reduce((s, i) => s + i.cantidad * i.precio_unit, 0),
+          v006.total,
+        );
+        assert.ok(v006.fecha instanceof Date);
+        assert.equal(historial.find((e) => e.id_venta === 'V016').id_receta, null);
+        assert.equal(historial[0].evento, 'receta');
+        assert.equal(historial[0].dispensas_realizadas, 2);
+      },
+    );
+
+    await t.test('q03: cliente sin movimientos, inexistente y sin parámetro', async () => {
+      assert.deepEqual((await q03(ctx, { id_cliente: 'C008' })).historial, []);
+      await assert.rejects(q03(ctx, { id_cliente: 'C999' }), { code: 'CLIENTE_INVALIDO' });
+      await assert.rejects(q03(ctx, {}), { code: 'PARAMETROS_INVALIDOS' });
+    });
+
+    await t.test('q04: clientes con más de una receta', async () => {
+      assert.deepEqual(
+        (await q04(ctx)).map((c) => [c.id_cliente, c.cantidad_recetas, c.recetas]),
+        [
+          ['C001', 2, ['RC001', 'RC008']],
+          ['C002', 2, ['RC005', 'RC009']],
+          ['C006', 2, ['RC003', 'RC004']],
+        ],
+      );
+    });
+
+    await t.test(
+      'q05: activos con ventas no anuladas de 60 días, incluidos los de cero',
+      async () => {
+        const { farmaceuticos } = await q05(ctx);
+        assert.deepEqual(
+          farmaceuticos.map((f) => [f.id_farmaceutico, f.ventas]),
+          [
+            ['F005', 3],
+            ['F002', 2],
+            ['F001', 1],
+            ['F003', 1],
+            ['F006', 1],
+            ['F007', 0],
+          ],
+        );
+      },
+    );
+
+    await t.test('q10: S002 incluye la atención de F004, hoy inactivo', async () => {
+      const { sucursal, clientes } = await q10(ctx, { id_sucursal: 'S002' });
+      assert.equal(sucursal.id_sucursal, 'S002');
+      assert.deepEqual(
+        clientes.map((c) => [
+          c.id_cliente,
+          c.farmaceuticos.map((f) => [f.id_farmaceutico, f.activo]),
+        ]),
+        [
+          ['C001', [['F003', true]]],
+          ['C004', [['F004', false]]],
+        ],
+      );
+    });
+
+    await t.test('q10: la droguería no tiene clientes; inexistente y sin parámetro', async () => {
+      assert.deepEqual((await q10(ctx, { id_sucursal: 'S005' })).clientes, []);
+      await assert.rejects(q10(ctx, { id_sucursal: 'S999' }), { code: 'SUCURSAL_INVALIDA' });
+      await assert.rejects(q10(ctx, {}), { code: 'PARAMETROS_INVALIDOS' });
+    });
+
+    await t.test('q10: un cambio de sucursal del farmacéutico no mueve su historia', async () => {
+      const { _id, ...f003 } = await db
+        .collection('farmaceuticos')
+        .findOne({ id_farmaceutico: 'F003' });
+      await aplicarEvento(driver, database, {
+        id_evento: 'farmaceutico:F003:2',
+        tipo_entidad: 'farmaceutico',
+        id_entidad: 'F003',
+        version: 2,
+        contenido: { ...f003, id_sucursal: 'S001', version: 2 },
+      });
+      const { clientes } = await q10(ctx, { id_sucursal: 'S002' });
+      assert.deepEqual(
+        clientes.map((c) => c.id_cliente),
+        ['C001', 'C004'],
+      );
+    });
+
+    await t.test('q12: sin ventas en el último año, incluido quien nunca compró', async () => {
+      const { clientes } = await q12(ctx);
+      assert.deepEqual(
+        clientes.map((c) => [c.id_cliente, c.activo, c.nunca_compro]),
+        [
+          ['C004', true, false],
+          ['C008', false, true],
+        ],
+      );
+      assert.ok(clientes[0].ultima_compra instanceof Date);
+      assert.equal(clientes[1].ultima_compra, null);
     });
   } finally {
     await vaciarGrafo(driver, database);

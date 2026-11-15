@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import neo4j from 'neo4j-driver';
 import { aDateTime, mapCliente, mapFarmaceutico, mapReceta, mapVenta } from '../src/graph/mapeo.js';
+import { ultimos60Dias, ultimoAnio } from '../src/graph/periodos.js';
+import { aJs } from '../src/graph/valores.js';
 
 test('aDateTime: convierte a UTC sin depender de la zona horaria y conserva null', () => {
   const dt = aDateTime(new Date('2026-10-08T21:30:15.250Z'));
@@ -111,4 +113,39 @@ test('mapVenta: referencias aparte, ítems como lista para relaciones y sin camp
   assert.equal(fila.items.length, 1);
   assert.equal(fila.items[0].cantidad.toNumber(), 2);
   assert.equal(fila.items[0].precio_unit.toNumber(), 2200);
+});
+
+test('ultimos60Dias: ventana de 60 días que termina ahora', () => {
+  const ahora = new Date('2026-11-15T14:00:00Z');
+  const { desde, hasta } = ultimos60Dias(ahora);
+  assert.equal(desde.toISOString(), '2026-09-16T14:00:00.000Z');
+  assert.equal(hasta.toISOString(), ahora.toISOString());
+});
+
+test('ultimoAnio: mismo instante del año anterior y 29/2 ajustado a 28/2', () => {
+  assert.equal(
+    ultimoAnio(new Date('2026-11-15T14:00:00Z')).desde.toISOString(),
+    '2025-11-15T14:00:00.000Z',
+  );
+  assert.equal(
+    ultimoAnio(new Date('2028-02-29T10:30:00Z')).desde.toISOString(),
+    '2027-02-28T10:30:00.000Z',
+  );
+  assert.equal(
+    ultimoAnio(new Date('2027-03-01T00:00:00Z')).desde.toISOString(),
+    '2026-03-01T00:00:00.000Z',
+  );
+});
+
+test('aJs: enteros a number, fechas a Date y estructuras anidadas', () => {
+  const fecha = new Date('2026-10-02T15:04:05.000Z');
+  assert.deepEqual(
+    aJs({
+      n: neo4j.int(7),
+      f: aDateTime(fecha),
+      lista: [neo4j.int(1), { x: null, s: 'a', b: false }],
+    }),
+    { n: 7, f: fecha, lista: [1, { x: null, s: 'a', b: false }] },
+  );
+  assert.equal(aJs(undefined), null);
 });
